@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Star, Search, Popcorn, Drama } from 'lucide-react'
+import { Calendar, Star, Search, Popcorn, Drama, ChevronDown } from 'lucide-react'
 import './Dashboard.css'
 
 const API_KEY = import.meta.env.VITE_APP_ACCESS_KEY
@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedGenre, setSelectedGenre] = useState('')
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -24,9 +25,9 @@ const Dashboard = () => {
           fetch(RECENT_RELEASES_API),
           fetch(GENRES_API)
         ])
-        
-        if (!popularResponse.ok || !recentResponse.ok || !genresResponse.ok) {throw new Error('API request failed')}
-        
+
+        if (!popularResponse.ok || !recentResponse.ok || !genresResponse.ok) throw new Error('API request failed')
+
         const popularData = await popularResponse.json()
         const recentData = await recentResponse.json()
         const genresData = await genresResponse.json()
@@ -44,7 +45,6 @@ const Dashboard = () => {
     fetchMovies()
   }, [])
 
-  // Get genre names from genre IDs
   const getGenreNames = (genreIds) => {
     return genreIds
       .map(id => genres.find(genre => genre.id === id)?.name)
@@ -53,13 +53,19 @@ const Dashboard = () => {
       .join(', ')
   }
 
-  // Filter movies based on search query
-  const filteredPopularMovies = popularMovies.filter(movie => movie.title.toLowerCase().includes(searchQuery.toLowerCase()))
-  const filteredRecentReleases = recentReleases.filter(movie => movie.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filterMovies = (movies) => {
+    return movies.filter(movie => {
+      const matchesSearch = movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesGenre = selectedGenre ? movie.genre_ids.includes(Number(selectedGenre)) : true
+      return matchesSearch && matchesGenre
+    })
+  }
+
+  const filteredPopularMovies = filterMovies(popularMovies)
+  const filteredRecentReleases = filterMovies(recentReleases)
 
   return (
     <div className='dashboard-container'>
-      {/* Header */}
       <header className='header'>
         <div className='search-container'>
           <span className='search-icon'><Search size={18} /></span>
@@ -67,11 +73,22 @@ const Dashboard = () => {
             type='text'
             placeholder='Search movies...'
             className='search-input'
-            name='searchMovies'
-            id='searchMovies'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <div className="select-wrapper">
+            <select 
+              className='genre-filter' 
+              value={selectedGenre} 
+              onChange={(e) => setSelectedGenre(e.target.value)}
+            >
+              <option value=''>All Genres</option>
+              {genres.map(genre => (
+                <option key={genre.id} value={genre.id}>{genre.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="filter-icon" size={16} />
+          </div>
         </div>
         <h1>Dashboard</h1>
       </header>
@@ -89,7 +106,6 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Stats summary */}
             <section className='stats-summary'>
               <div className='stat-card'>
                 <div className='stat-icon'><Popcorn size={24} /></div>
@@ -126,11 +142,9 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* Popular movies */}
             <section className='popular-movies'>
               <div className='section-header'>
                 <h3 className='section-title'>Popular Movies</h3>
-                <button className='view-all-btn'>View All</button>
               </div>
               <div className='popular-list'>
                 {filteredPopularMovies.slice(0, 12).map((movie) => (
@@ -155,11 +169,9 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* Recent releases */}
             <section className='recent-releases'>
               <div className='section-header'>
                 <h3 className='section-title'>Recent Releases</h3>
-                <button className='view-all-btn'>View All</button>
               </div>
               <div className='releases-grid'>
                 {filteredRecentReleases.slice(0, 15).map((movie) => (
