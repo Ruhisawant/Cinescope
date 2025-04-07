@@ -300,7 +300,7 @@ html, body {
   gap: 0.25rem;
 }
 
-.watch-trailer-btn {
+.details-btn {
   background-color: #ef4444;
   color: white;
   border: none;
@@ -312,7 +312,7 @@ html, body {
   width: 100%;
 }
 
-.watch-trailer-btn:hover {
+.details-btn:hover {
   background-color: #dc2626;
 }
 

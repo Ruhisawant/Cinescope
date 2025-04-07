@@ -160,7 +160,7 @@ const Dashboard = () => {
           </div>
           <div className='popular-list'>
             {filteredPopularMovies.slice(0, 12).map((movie) => (
-              <div key={movie.id} className='popular-card'>
+              <div key={movie.id} className='popular-card' onClick={() => navigate(`/movie-details/${movie.id}`)}>
                 <div className='card-content'>
                   <img 
                     src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} 
@@ -196,7 +196,6 @@ const Dashboard = () => {
                 <div className='poster-overlay'>
                   <div>
                     <h4 className='release-title'>{movie.title}</h4>
-                    <p className='release-overview'>{movie.overview.slice(0, 100)}...</p>
                     <div className='release-details'>
                       <div className='release-subtitle'>
                         <Calendar size={16} />
@@ -207,7 +206,7 @@ const Dashboard = () => {
                         {movie.vote_average.toFixed(1)}
                       </div>
                     </div>
-                    <button className='watch-trailer-btn'>Watch Trailer</button>
+                    <button className='details-btn' onClick={() => navigate(`/movie-details/${movie.id}`)}>Click to see more</button>
                   </div>
                 </div>
               </div>
