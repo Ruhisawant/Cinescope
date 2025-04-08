@@ -1,8 +1,11 @@
 import React from 'react'
-import './About.css'
+import { useNavigate } from 'react-router-dom'
 import { Film, Info, Star, Search, Clapperboard } from 'lucide-react'
+import './About.css'
 
 const About = () => {
+  const navigate = useNavigate()
+
   return (
     <div className='about-container'>
       <header className='about-header'>
@@ -46,7 +49,7 @@ const About = () => {
 
       <section className='about-call-to-action'>
         <p>Ready to start exploring? Dive into the world of movies now!</p>
-        <button className='explore-button'>Explore Movies</button>
+        <button className='explore-button' onClick={() => navigate('/')}>Explore Movies</button>
       </section>
     </div>
   )

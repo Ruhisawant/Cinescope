@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, Star, Search, Drama, TrendingUp } from 'lucide-react'
+import DashboardChart from '../components/Charts'
 import './Dashboard.css'
-import { Pie, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, LineElement, Title, Tooltip, Legend, PointElement } from 'chart.js';
-
-ChartJS.register(ArcElement, CategoryScale, LinearScale, LineElement, Title, Tooltip, Legend, PointElement);
 
 const API_KEY = import.meta.env.VITE_APP_ACCESS_KEY
 const POPULAR_MOVIES_API = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`
@@ -21,11 +18,9 @@ const Dashboard = () => {
   const [averageRating, setAverageRating] = useState(0)
   const [currentYearReleases, setCurrentYearReleases] = useState(0)
   const [averagePopularity, setAveragePopularity] = useState(0)
-  const [allMovies, setAllMovies] = useState([]);
-  const [pieChartData, setPieChartData] = useState(null);
-  const [lineChartData, setLineChartData] = useState(null);
+  const [allMovies, setAllMovies] = useState([])
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -59,10 +54,6 @@ const Dashboard = () => {
         //Combine movies for charts
         const combined = [...popular, ...recent];
         setAllMovies(combined);
-        
-        // Generate chart data
-        generatePieChartData(combined, genreMap);
-        generateLineChartData(combined);
 
         // Calculate average rating
         const avg = popular.length > 0 
@@ -107,235 +98,6 @@ const Dashboard = () => {
     
     fetchMovies()
   }, [])
-
-  // Generate pie chart data with improved visualization
-  const generatePieChartData = (movies, genreMap) => {
-    // Count genres
-    const genreCount = {};
-    movies.forEach(movie => {
-      if (movie.genre_ids && movie.genre_ids.length) {
-        movie.genre_ids.forEach(genreId => {
-          genreCount[genreId] = (genreCount[genreId] || 0) + 1;
-        });
-      }
-    });
-    
-    // Sort genres by count (descending)
-    const sortedGenres = Object.entries(genreCount)
-      .sort((a, b) => b[1] - a[1]);
-    
-    // Keep top 8 genres, group the rest as "Other"
-    const MAX_SLICES = 8;
-    let labels = [];
-    let data = [];
-    let otherCount = 0;
-    
-    sortedGenres.forEach(([genreId, count], index) => {
-      if (index < MAX_SLICES) {
-        labels.push(genreMap[genreId] || `Genre ${genreId}`);
-        data.push(count);
-      } else {
-        otherCount += count;
-      }
-    });
-    
-    // Add "Other" category if needed
-    if (otherCount > 0) {
-      labels.push("Other");
-      data.push(otherCount);
-    }
-    
-    // Generate dynamic colors based on the number of slices
-    const backgroundColor = [];
-    const borderColor = [];
-    
-    for (let i = 0; i < labels.length; i++) {
-      const hue = (i * 360) / labels.length;
-      backgroundColor.push(`hsla(${hue}, 70%, 60%, 0.6)`);
-      borderColor.push(`hsla(${hue}, 70%, 50%, 1)`);
-    }
-    
-    setPieChartData({
-      labels,
-      datasets: [
-        {
-          data,
-          backgroundColor,
-          borderColor,
-          borderWidth: 1,
-        },
-      ],
-    });
-  };
-
-  // Generate improved line chart data
-  const generateLineChartData = (movies) => {
-    // Count movies by release year
-    const yearsData = {};
-    const ratingsByYear = {};
-    const countByYear = {};
-    
-    // Extract and process the data
-    movies.forEach(movie => {
-      if (movie.release_date) {
-        const year = new Date(movie.release_date).getFullYear();
-        
-        // Count movies by year
-        yearsData[year] = (yearsData[year] || 0) + 1;
-        
-        // Track ratings by year for average calculation
-        if (!ratingsByYear[year]) ratingsByYear[year] = 0;
-        ratingsByYear[year] += movie.vote_average;
-        
-        if (!countByYear[year]) countByYear[year] = 0;
-        countByYear[year]++;
-      }
-    });
-    
-    // Calculate average ratings by year
-    const avgRatingsByYear = {};
-    Object.keys(ratingsByYear).forEach(year => {
-      avgRatingsByYear[year] = ratingsByYear[year] / countByYear[year];
-    });
-    
-    // Sort years chronologically
-    const sortedYears = Object.keys(yearsData).sort();
-    
-    // Prepare the data for the chart
-    const moviesCountData = sortedYears.map(year => yearsData[year]);
-    const avgRatingsData = sortedYears.map(year => avgRatingsByYear[year].toFixed(1));
-    
-    setLineChartData({
-      labels: sortedYears,
-      datasets: [
-        {
-          label: 'Number of Movies',
-          data: moviesCountData,
-          fill: false,
-          backgroundColor: 'rgba(75, 192, 192, 0.4)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          yAxisID: 'y',
-          tension: 0.1,
-          pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        },
-        {
-          label: 'Average Rating',
-          data: avgRatingsData,
-          fill: false,
-          backgroundColor: 'rgba(255, 99, 132, 0.4)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          yAxisID: 'y1',
-          tension: 0.1,
-          borderDash: [5, 5],
-          pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        }
-      ],
-    });
-  };
-
-  const pieChartOptions = {
-    plugins: {
-      legend: {
-        position: 'right',
-        labels: {
-          boxWidth: 15,
-          padding: 15
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const value = context.raw;
-            const percentage = Math.round((value / total) * 100);
-            return `${context.label}: ${value} (${percentage}%)`;
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'Movie Distribution by Genre',
-        font: {
-          size: 16
-        }
-      }
-    },
-    maintainAspectRatio: false
-  };
-
-  const lineChartOptions = {
-    responsive: true,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    plugins: {
-      title: {
-        display: true,
-        text: 'Movie Trends Over Time',
-        font: {
-          size: 16
-        }
-      },
-      tooltip: {
-        callbacks: {
-          title: function(context) {
-            return `Year: ${context[0].label}`;
-          }
-        }
-      },
-      legend: {
-        position: 'top',
-      }
-    },
-    scales: {
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Number of Movies'
-        },
-        beginAtZero: true,
-        grid: {
-          drawOnChartArea: false,
-        },
-        ticks: {
-          precision: 0
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Average Rating'
-        },
-        min: 0,
-        max: 10,
-        grid: {
-          drawOnChartArea: false,
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Release Year'
-        }
-      }
-    },
-    maintainAspectRatio: false
-  };
 
   const filterMovies = (movies) => {
     return movies.filter(movie => 
@@ -458,26 +220,9 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-        
+
           <div className='charts-col'>
-            <div className='chart-card'>
-              <div className='chart-info'>
-                {pieChartData ? (
-                  <Pie data={pieChartData} options={pieChartOptions} />
-                ) : (
-                  <div className="loading">Loading chart data...</div>
-                )}
-              </div>
-            </div>
-            <div className='chart-card'>
-              <div className='chart-info'>
-                {lineChartData ? (
-                  <Line data={lineChartData} options={lineChartOptions} />
-                ) : (
-                  <div className="loading">Loading chart data...</div>
-                )}
-              </div>
-            </div>
+            <DashboardChart movies={allMovies} genreMap={genres} />
           </div>
         </section>
       </main>
@@ -485,4 +230,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard;
+export default Dashboard
