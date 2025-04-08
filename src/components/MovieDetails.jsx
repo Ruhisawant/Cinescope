@@ -48,7 +48,7 @@ const MovieDetails = () => {
         </div>
           <p><strong>Overview:</strong> {movie.overview}</p>
 					<p><strong>Homepage:</strong> {movie.homepage ? (<a href={movie.homepage}>{movie.homepage}</a>) : (<span> N/A</span>)}</p>
-				</div>
+			</div>
     </div>
   ) 
 }

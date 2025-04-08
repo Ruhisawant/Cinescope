@@ -61,7 +61,7 @@
 }
 
 .details-content a {
-  color: #3b82f6;
+  color: #3498db;
   text-decoration: none;
   word-break: break-all;
 }
@@ -78,7 +78,7 @@
 }
 
 .back-button {
-  background-color: #3b82f6;
+  background-color: #3498db;
   color: white;
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
@@ -90,5 +90,5 @@
 }
 
 .back-button:hover {
-  background-color: #2563eb;
+  background-color: #2980b9;
 }

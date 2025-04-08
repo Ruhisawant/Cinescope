@@ -3,7 +3,6 @@
   max-width: 1200px;
   margin: 0 auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
 }
 
 .about-header {
@@ -14,12 +13,12 @@
 .about-header h1 {
   font-size: 3rem;
   margin-bottom: 0.75rem;
-  color: #2c3e50;
+  color: #f3f4f6;
 }
 
 .about-header p {
   font-size: 1.2rem;
-  color: #555;
+  color: #9d9d9d;
   margin-bottom: 1.5rem;
 }
 
@@ -28,7 +27,7 @@
   font-size: 1.15rem;
   line-height: 1.7;
   text-align: center;
-  color: #34495e;
+  color: #5981a6;
 }
 
 .about-features {
@@ -38,7 +37,7 @@
 }
 
 .feature-card {
-  background: #fff;
+  background: #cdcdcd;
   border-radius: 15px;
   padding: 2rem;
   text-align: center;
@@ -53,7 +52,7 @@
 
 .feature-icon {
   margin-bottom: 1rem;
-  color: #3498db;
+  color: #ef4444;
 }
 
 .feature-card h4 {
@@ -65,7 +64,7 @@
 
 .feature-card p {
   font-size: 1rem;
-  color: #777;
+  color: #6e6e6e;
 }
 
 .about-call-to-action {
@@ -76,7 +75,7 @@
 .about-call-to-action p {
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
-  color: #34495e;
+  color: #5981a6;
 }
 
 .explore-button {
