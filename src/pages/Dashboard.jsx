@@ -162,11 +162,11 @@ const Dashboard = () => {
         <section className='popular-movies'>
           <div className='section-header'>
             <h3 className='section-title'>Popular Movies</h3>
-            <button className='view-all-btn' onClick={() => navigate('/all-movies')}>View All</button>
+            <button className='view-all-btn' onClick={() => navigate('/movies')}>View All</button>
           </div>
           <div className='popular-list'>
             {filteredPopularMovies.slice(0, 12).map((movie) => (
-              <div key={movie.id} className='popular-card' onClick={() => navigate(`/movie-details/${movie.id}`)}>
+              <div key={movie.id} className='popular-card' onClick={() => navigate(`/movies/${movie.id}`)}>
                 <div className='card-content'>
                   <img 
                     src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} 
@@ -194,7 +194,7 @@ const Dashboard = () => {
           <div className='recent-releases'>
             <div className='section-header'>
               <h3 className='section-title'>Recent Releases</h3>
-              <button className='view-all-btn' onClick={() => navigate('/all-movies')}>View All</button>
+              <button className='view-all-btn' onClick={() => navigate('/movies')}>View All</button>
             </div>
             <div className='releases-grid'>
               {filteredRecentReleases.slice(0, 6).map((movie) => (
@@ -213,7 +213,7 @@ const Dashboard = () => {
                           {movie.vote_average.toFixed(1)}
                         </div>
                       </div>
-                      <button className='details-btn' onClick={() => navigate(`/movie-details/${movie.id}`)}>Click to see more</button>
+                      <button className='details-btn' onClick={() => navigate(`/movies/${movie.id}`)}>Click to see more</button>
                     </div>
                   </div>
                 </div>

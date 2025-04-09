@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Film, LineChart, Menu, Home, Clapperboard, Info } from 'lucide-react'
+import { Clapperboard, Menu, Home, Film, TvMinimal, Sparkles, Info } from 'lucide-react'
 import './Navigation.css'
+
+const API_KEY = import.meta.env.VITE_APP_ACCESS_KEY;
 
 const Navigation = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -22,7 +24,7 @@ const Navigation = ({ children }) => {
     return () => {window.removeEventListener("resize", handleResize)}
   }, [])
 
-  const isActive = (path) => {return location.pathname === path ? 'nav-active' : ''}
+  const isActive = (path) => location.pathname === path ? 'nav-active' : ''
 
   return (
     <div className='app-container'>
@@ -38,7 +40,7 @@ const Navigation = ({ children }) => {
             <Menu size={20} />
           </button>
         </div>
-        
+
         <nav className='sidebar-nav'>
           <div className='nav-section'>
             <h3 className={`section-title ${!sidebarOpen ? 'hidden' : ''}`}>Menu</h3>
@@ -51,25 +53,31 @@ const Navigation = ({ children }) => {
               </li>
             </ul>
           </div>
-          
+
           <div className='nav-section'>
             <h3 className={`section-title ${!sidebarOpen ? 'hidden' : ''}`}>Library</h3>
             <ul className='nav-list'>
               <li>
-                <Link to='/all-movies' className={`nav-item ${isActive('/all-movies')}`}>
+                <Link to='/movies' className={`nav-item ${isActive('/movies')}`}>
                   <Film size={20} className='nav-icon' />
-                  {sidebarOpen && <span className='nav-label'>All Movies</span>}
+                  {sidebarOpen && <span className='nav-label'>Movies</span>}
                 </Link>
               </li>
               <li>
-                <Link to='/trending' className={`nav-item ${isActive('/trending')}`}>
-                  <LineChart size={20} className='nav-icon' />
-                  {sidebarOpen && <span className='nav-label'>Trending</span>}
+                <Link to='/tv-shows' className={`nav-item ${isActive('/tv-shows')}`}>
+                  <TvMinimal size={20} className='nav-icon' />
+                  {sidebarOpen && <span className='nav-label'>TV Shows</span>}
+                </Link>
+              </li>
+              <li>
+                <Link to='/actors' className={`nav-item ${isActive('/actors')}`}>
+                  <Sparkles size={20} className='nav-icon' />
+                  {sidebarOpen && <span className='nav-label'>Actors & Actresses</span>}
                 </Link>
               </li>
             </ul>
           </div>
-          
+
           <div className='nav-section bottom-section'>
             <ul className='nav-list'>
               <li>
@@ -78,13 +86,11 @@ const Navigation = ({ children }) => {
                   {sidebarOpen && <span className='nav-label'>About</span>}
                 </Link>
               </li>
-              <li>
-              </li>
             </ul>
           </div>
         </nav>
       </div>
-      
+
       <div className={`main-content ${sidebarOpen ? '' : 'expanded'}`}>
         {children}
       </div>
