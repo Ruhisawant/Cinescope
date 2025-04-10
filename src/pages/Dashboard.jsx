@@ -8,56 +8,108 @@ const API_KEY = import.meta.env.VITE_APP_ACCESS_KEY
 
 const Dashboard = () => {
   const [popularMovies, setPopularMovies] = useState([])
+  const [popularTvShows, setPopularTvShows] = useState([])
   const [recentReleases, setRecentReleases] = useState([])
+  const [popularPeople, setPopularPeople] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+
   const [genres, setGenres] = useState({})
   const [topGenre, setTopGenre] = useState('Loading...')
   const [averageRating, setAverageRating] = useState(0)
   const [currentYearReleases, setCurrentYearReleases] = useState(0)
-  const [averagePopularity, setAveragePopularity] = useState(0)
-  const [allMovies, setAllMovies] = useState([])
+  const [contentStats, setContentStats] = useState({
+    movies: 0,
+    tvShows: 0,
+    cast: 0,
+    crew: 0
+  })
+  const [allContent, setAllContent] = useState({
+    movies: [],
+    tvShows: [],
+    people: []
+  })
 
   const navigate = useNavigate()
 
-  // Fetch popular movies, recent releases, and genres
+  // Fetch all content data
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchContent = async () => {
       try {
-        const [popularResponse, recentResponse, genresResponse] = await Promise.all([
+        const [
+          popularMoviesRes, 
+          recentMoviesRes, 
+          popularTvRes, 
+          genresMovieRes, 
+          genresTvRes,
+          popularPeopleRes
+        ] = await Promise.all([
           fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`),
           fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`),
-          fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=en-US`)
+          fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=en-US&page=1`),
+          fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=en-US`),
+          fetch(`https://api.themoviedb.org/3/genre/tv/list?api_key=${API_KEY}&language=en-US`),
+          fetch(`https://api.themoviedb.org/3/person/popular?api_key=${API_KEY}&language=en-US&page=1`)
         ])
-        if (!popularResponse.ok || !recentResponse.ok || !genresResponse.ok) throw new Error('API request failed')
 
-        const popularData = await popularResponse.json()
-        const recentData = await recentResponse.json()
-        const genresData = await genresResponse.json()
+        if (!popularMoviesRes.ok || !recentMoviesRes.ok || !popularTvRes.ok || 
+            !genresMovieRes.ok || !genresTvRes.ok || !popularPeopleRes.ok) 
+          throw new Error('API request failed')
 
-        // Genre Mapping
+        const popularMoviesData = await popularMoviesRes.json()
+        const recentMoviesData = await recentMoviesRes.json()
+        const popularTvData = await popularTvRes.json()
+        const genresMovieData = await genresMovieRes.json()
+        const genresTvData = await genresTvRes.json()
+        const popularPeopleData = await popularPeopleRes.json()
+
+        // Genre Mapping (combine movie and TV genres)
         const genreMap = {}
-        genresData.genres.forEach(genre => {
+        genresMovieData.genres.forEach(genre => {
+          genreMap[genre.id] = genre.name
+        })
+        genresTvData.genres.forEach(genre => {
           genreMap[genre.id] = genre.name
         })
         setGenres(genreMap)
 
-        // Set Movie Lists
-        const popular = popularData.results || []
-        const recent = recentData.results || []
-        setPopularMovies(popular)
+        // Set Content Lists
+        const movies = popularMoviesData.results || []
+        const recent = recentMoviesData.results || []
+        const tvShows = popularTvData.results || []
+        const people = popularPeopleData.results || []
+
+        setPopularMovies(movies)
         setRecentReleases(recent)
+        setPopularTvShows(tvShows)
+        setPopularPeople(people)
 
-        const combined = [...popular, ...recent]
-        setAllMovies(combined)
+        // Store all content
+        setAllContent({
+          movies: [...movies, ...recent],
+          tvShows: tvShows,
+          people: people
+        })
 
-        // Calculate Average Rating
-        const avg = popular.length > 0 
-          ? popular.reduce((sum, movie) => sum + movie.vote_average, 0) / popular.length
+        // Calculate Content Stats
+        setContentStats({
+          movies: movies.length + recent.length,
+          tvShows: tvShows.length,
+          cast: Math.floor(people.length * 0.7), // Approximation of cast vs crew
+          crew: Math.floor(people.length * 0.3)  // Approximation of cast vs crew
+        })
+
+        // Calculate Average Rating (for movies and TV combined)
+        const allRatings = [...movies, ...tvShows].map(item => item.vote_average)
+        const avgRating = allRatings.length > 0 
+          ? allRatings.reduce((sum, rating) => sum + rating, 0) / allRatings.length
           : 0
-        setAverageRating(avg.toFixed(1))
+        setAverageRating(avgRating.toFixed(1))
 
-        // Find Most Frequent Genre
-        const allGenreIds = combined.flatMap(movie => movie.genre_ids)
+        // Find Most Frequent Genre across all content
+        const movieGenreIds = movies.flatMap(movie => movie.genre_ids)
+        const tvGenreIds = tvShows.flatMap(show => show.genre_ids)
+        const allGenreIds = [...movieGenreIds, ...tvGenreIds]
+        
         const genreCounts = {}
         allGenreIds.forEach(id => {
           genreCounts[id] = (genreCounts[id] || 0) + 1
@@ -69,37 +121,36 @@ const Dashboard = () => {
           setTopGenre(genreMap[topGenreId] || 'Unknown')
         }
 
-        // Count This Year’s Releases
+        // Count This Year's Releases (movies and TV)
         const currentYear = new Date().getFullYear()
-        const thisYearReleases = combined.filter(movie => 
+        const thisYearMovies = movies.filter(movie => 
           movie.release_date && movie.release_date.startsWith(currentYear)
         ).length
-        setCurrentYearReleases(thisYearReleases)
-
-        // Calculate Average Popularity
-        const totalPopularity = combined.reduce((sum, movie) => sum + movie.popularity, 0)
-        const avgPopularity = combined.length > 0 
-          ? (totalPopularity / combined.length).toFixed(0)
-          : 0
-        setAveragePopularity(avgPopularity)
+        const thisYearTv = tvShows.filter(show => 
+          show.first_air_date && show.first_air_date.startsWith(currentYear)
+        ).length
+        setCurrentYearReleases(thisYearMovies + thisYearTv)
 
       } catch (error) {
         console.error('Error fetching data:', error)
       }
     }
 
-    fetchMovies()
+    fetchContent()
   }, [])
 
-  // Movie Search Filter
-  const filterMovies = (movies) => {
-    return movies.filter(movie => 
-      movie.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  // Content Search Filter
+  const filterContent = (contentList) => {
+    return contentList.filter(item => {
+      const title = item.title || item.name || ''
+      return title.toLowerCase().includes(searchQuery.toLowerCase())
+    })
   }
 
-  const filteredPopularMovies = filterMovies(popularMovies)
-  const filteredRecentReleases = filterMovies(recentReleases)
+  const filteredMovies = filterContent(popularMovies)
+  const filteredTvShows = filterContent(popularTvShows)
+  const filteredReleases = filterContent(recentReleases)
+  const filteredPeople = filterContent(popularPeople)
 
   return (
     <div className='dashboard-container'>
@@ -109,7 +160,7 @@ const Dashboard = () => {
           <span className='search-icon'><Search size={18} /></span>
           <input 
             type='text'
-            placeholder='Search movies...'
+            placeholder='Search for content...'
             className='search-input'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,7 +171,7 @@ const Dashboard = () => {
 
       {/* Main Dashboard Content */}
       <main className='dashboard-content'>
-        {/* Stats Summary Cards */}
+        {/* Stats Cards */}
         <section className='stats-summary'>
           <div className='stat-card'>
             <div className='stat-icon'><Star size={24} /></div>
@@ -149,8 +200,8 @@ const Dashboard = () => {
           <div className='stat-card'>
             <div className='stat-icon'><TrendingUp size={24} /></div>
             <div className='stat-info'>
-              <h4>Average Popularity Score</h4>
-              <p className='stat-value'>{averagePopularity}</p>
+              <h4>Total Content</h4>
+              <p className='stat-value'>{contentStats.movies + contentStats.tvShows}</p>
             </div>
           </div>
         </section>
@@ -162,7 +213,7 @@ const Dashboard = () => {
             <button className='view-all-btn' onClick={() => navigate('/movies')}>View All</button>
           </div>
           <div className='popular-list'>
-            {filteredPopularMovies.slice(0, 12).map((movie) => (
+            {filteredMovies.slice(0, 8).map((movie) => (
               <div key={movie.id} className='popular-card' onClick={() => navigate(`/movies/${movie.id}`)}>
                 <div className='card-content'>
                   <img 
@@ -187,6 +238,69 @@ const Dashboard = () => {
           </div>
         </section>
 
+        {/* Popular TV Shows Section */}
+        <section className='popular-movies'>
+          <div className='section-header'>
+            <h3 className='section-title'>Popular TV Shows</h3>
+            <button className='view-all-btn' onClick={() => navigate('/tv')}>View All</button>
+          </div>
+          <div className='popular-list'>
+            {filteredTvShows.slice(0, 8).map((show) => (
+              <div key={show.id} className='popular-card' onClick={() => navigate(`/tv/${show.id}`)}>
+                <div className='card-content'>
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w92${show.poster_path}`} 
+                    alt={show.name}
+                    className='popular-thumbnail'
+                  />
+                  <div className='popular-details'>
+                    <p className='popular-title'>{show.name}</p>
+                    <div className='popular-rating'>
+                      <Star size={14} className='star-icon' />
+                      <span>{show.vote_average.toFixed(1)}</span>
+                    </div>
+                    <div className='popular-release'>
+                        <Calendar size={14} className='calendar-icon' />
+                        {show.first_air_date}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Popular People */}
+        <section className='popular-movies'>
+          <div className='section-header'>
+            <h3 className='section-title'>Popular Cast & Crew</h3>
+            <button className='view-all-btn' onClick={() => navigate('/people')}>View All</button>
+          </div>
+          <div className='popular-list'>
+            {filteredPeople.slice(0, 8).map((person) => (
+              <div key={person.id} className='popular-card' onClick={() => navigate(`/person/${person.id}`)}>
+                <div className='card-content'>
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w92${person.profile_path}`} 
+                    alt={person.name}
+                    className='popular-thumbnail'
+                  />
+                  <div className='popular-details'>
+                    <p className='popular-title'>{person.name}</p>
+                    <div className='popular-rating'>
+                      <Star size={14} className='star-icon' />
+                      <span>{person.popularity.toFixed(1)}</span>
+                    </div>
+                    <div className='popular-release'>
+                      <span>Known for: {person.known_for_department || 'Acting'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Recent Releases + Charts Section */}
         <section className='recent-grid'>
           <div className='recent-releases'>
@@ -195,17 +309,13 @@ const Dashboard = () => {
               <button className='view-all-btn' onClick={() => navigate('/movies')}>View All</button>
             </div>
             <div className='releases-grid'>
-              {filteredRecentReleases.slice(0, 6).map((movie) => (
+              {filteredReleases.slice(0, 9).map((movie) => (
                 <div key={movie.id} className='release-card'>
                   <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} className='movie-img' />
                   <div className='poster-overlay'>
                     <div>
                       <h4 className='release-title'>{movie.title}</h4>
                       <div className='release-details'>
-                        <div className='release-subtitle'>
-                          <Calendar size={16} />
-                          {movie.release_date}
-                        </div>
                         <div className='release-subtitle'>
                           <Star size={16} />
                           {movie.vote_average.toFixed(1)}
@@ -221,7 +331,12 @@ const Dashboard = () => {
 
           {/* Dashboard Charts */}
           <div className='charts-col'>
-            <DashboardChart movies={allMovies} genreMap={genres} />
+            <DashboardChart 
+              movies={allContent.movies} 
+              tvShows={allContent.tvShows}
+              people={allContent.people}
+              genreMap={genres} 
+            />
           </div>
         </section>
       </main>
