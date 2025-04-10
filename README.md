@@ -1,70 +1,62 @@
-# Web Development Project 5 - **CineScope**
+# Web Development Project 6 - *CineScope*
 
 Submitted by: **Ruhi Sawant**
 
-This web app: **CineScope** is a movie dashboard that displays a list of popular movies and recent releases fetched from The Movie Database (TMDb) API. The dashboard includes interactive features like a search bar and a filter by genre to help users explore the movie data. It also shows summary statistics such as the total number of movies, average rating, and top genre.
+This web app: **CineScope is a movie and TV show dashboard app that fetches data from TMDB, visualizes insights with interactive charts, and allows users to explore detailed views of movies, shows, and popular people in the industry.**
 
-Time spent: **15 hours** spent in total
+Time spent: **26 hours spent in total**
 
 ## Required Features
 
 The following **required** functionality is completed:
 
-- [x] **The site has a dashboard displaying a list of data fetched using an API call**
-  - The dashboard displays at least 10 unique items, one per row. Movies are listed in the "Popular Movies" and "Recent Releases" sections, with a focus on displaying information such as title, genre, and average rating.
-  - The dashboard includes at least two features in each row (e.g., movie title, genre, and rating).
+- [x] **Clicking on an item in the list view displays more details about it**
+  - Clicking on a movie, TV show, or person in the dashboard list navigates to a detail view for that item
+  - Detail view includes extra information like description, release date, ratings, and more
+  - The same sidebar is displayed in detail view as in dashboard view
+  - *To ensure an accurate grade, your sidebar **must** be viewable when showing the details view in your recording.*
+- [x] **Each detail view of an item has a direct, unique URL link to that item’s detail view page**
+  - e.g., `/movies/1234`, `/tv-shows/5678`, etc.
+  - *To ensure an accurate grade, the URL/address bar of your web browser **must** be viewable in your recording.*
+- [x] **The app includes at least two unique charts developed using the fetched data that tell an interesting story**
+  - Average ratings over time (line chart)
+  - Movie/TV popularity trends (bar chart or area chart)
 
-- [x] **`useEffect` React hook and `async`/`await` are used**
-  - The `useEffect` hook is used to fetch movie data when the component loads. The data is fetched asynchronously using `async`/`await` with `Promise.all` to load data for popular movies, recent releases, and genres.
-
-- [x] **The app dashboard includes at least three summary statistics about the data**
-  - **Total Popular Movies**: Shows the total number of popular movies.
-  - **Recent Releases**: Displays the total number of movies in the "Recent Releases" category.
-  - **Average Rating**: Displays the average rating of all popular movies.
-  - **Top Genre**: Displays the name of the first genre in the list of genres from the API.
-
-- [x] **A search bar allows the user to search for an item in the fetched data**
-  - The search bar filters movies by title. It dynamically updates the list of results as the user types into the search bar, only displaying movies that match the search query.
-
-- [x] **An additional filter allows the user to restrict displayed items by specified categories**
-  - A genre filter allows users to filter movies based on their genre. The list dynamically updates as the user selects a genre from the dropdown menu.
-  - The genre filter works separately from the search bar, using the `genre_ids` of the movies.
+## Optional Features
 
 The following **optional** features are implemented:
 
-- [x] **Multiple filters can be applied simultaneously**
-  - The user can apply both the search bar filter and the genre filter at the same time to refine their movie search.
+- [x] The site’s customized dashboard contains more content that explains what is interesting about the data 
+  - Includes titles, interactive tooltips, and hover effects to help interpret chart data
+- [x] The site allows users to toggle between different data visualizations
+  - Filter and sort functionalities allow users to customize what data they view
 
-- [x] **Filters use different input types**
-  - The genre filter uses a dropdown selection, and the search bar uses a text input field.
+## Additional Features
 
-- [x] **The user can enter specific bounds for filter values**
-  - Although not implemented in the current version, you could easily extend the filter features with more advanced filtering options such as a rating range slider.
-
-The following **additional** features are implemented:
-
-* [x] **Responsive Design**: The sidebar navigation collapses on smaller screens, providing a more mobile-friendly experience. The user can toggle the sidebar visibility with a hamburger menu.
-* [x] **Active Link Highlighting**: The navigation links are highlighted based on the current page using the `isActive` function in the `Navigation` component.
-* [x] **Movie Posters and Overviews**: The dashboard shows movie posters and includes an overview for recent releases, giving users a preview of the movie details.
+* [x] Responsive sidebar with toggle functionality and route-based active state indication
+* [x] Accessible design with ARIA labels for menu toggle
+* [x] Integration with TMDB API to dynamically fetch up-to-date data
+* [x] Uses `lucide-react` icons for a clean and modern UI
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='/src/assets/walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='/src/assets/walkthrough2.gif' title='Video Walkthrough 2' width='100%' alt='Video Walkthrough 2' />
 
-GIF created with ... [AdobeExpress](https://www.adobe.com/express/feature/video/convert/mov-to-gif)
+GIF created with [AdobeExpress](https://www.adobe.com/express/feature/video/convert/mov-to-gif)
 
 ## Notes
 
-**Challenges encountered while building the app**:
-- **API Data Handling**: One of the challenges was ensuring that the movie data was properly fetched and processed, particularly with respect to the asynchronous nature of `useEffect` and ensuring that the API responses were correctly handled using `async`/`await`.
-- **Dynamic Filtering**: Implementing the search bar and genre filter to work simultaneously required some careful state management, especially when handling the filtering logic across different movie categories.
-- **Responsive Design**: Ensuring that the sidebar navigation collapsed correctly on smaller screens and that the app was usable on both desktop and mobile devices was an interesting challenge.
+Describe any challenges encountered while building the app:
+
+- Understanding how to structure routes for detail views while keeping the sidebar layout consistent
+- Dynamically filtering data for chart displays
+- Ensuring responsiveness for smaller screen sizes using `window.innerWidth` and toggle logic
 
 ## License
 
-    Copyright [2025] [Ruhi Sawant]
+    Copyright 2025 Ruhi Sawant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
