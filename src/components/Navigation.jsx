@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Clapperboard, Menu, Home, Film, TvMinimal, Sparkles, Info } from 'lucide-react'
+import { Clapperboard, Menu, Home, Film, TvMinimal, Signature, Info } from 'lucide-react'
 import './Navigation.css'
 
 const Navigation = ({ children }) => {
@@ -81,7 +81,7 @@ const Navigation = ({ children }) => {
               </li>
               <li>
                 <Link to='/people' className={`nav-item ${isActive('/people')}`}>
-                  <Sparkles size={20} className='nav-icon' />
+                  <Signature  size={20} className='nav-icon' />
                   {sidebarOpen && <span className='nav-label'>Cast & Crew</span>}
                 </Link>
               </li>
