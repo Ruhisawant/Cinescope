@@ -1,55 +1,82 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Film, Info, Star, Search, Clapperboard } from 'lucide-react'
+import { Film, Users, Clapperboard, BarChart3, Info } from 'lucide-react'
 import './About.css'
 
 const About = () => {
   const navigate = useNavigate()
-
+  
+  // Feature Cards data
+  const features = [
+    {
+      icon: <Film size={32} className='feature-icon' />,
+      title: 'Movies & TV Shows',
+      description: 'Explore the latest releases, popular titles, and comprehensive information on both movies and TV shows.'
+    },
+    {
+      icon: <Users size={32} className='feature-icon' />,
+      title: 'Cast & Crew Details',
+      description: 'Discover actors, directors, and other industry professionals with detailed profile pages.'
+    },
+    {
+      icon: <BarChart3 size={32} className='feature-icon' />,
+      title: 'Visual Analytics',
+      description: 'Gain insights through interactive charts and statistics about genres, ratings, and popularity trends.'
+    },
+    {
+      icon: <Info size={32} className='feature-icon' />,
+      title: 'Detailed Information',
+      description: 'Access comprehensive details on every movie, TV show, and person in the entertainment industry.'
+    },
+  ]
+  
   return (
     <div className='about-container'>
+      {/* Header Section */}
       <header className='about-header'>
-        <Clapperboard size={64} className='header-icon' />
+        <div className='logo-container'>
+          <Clapperboard size={64} className='header-icon' />
+        </div>
         <h1>Welcome to CineScope</h1>
-        <p>Discover, explore, and dive into the world of cinema with ease.</p>
+        <p className='subtitle'>The complete entertainment guide powered by The Movie Database.</p>
       </header>
 
+      {/* Introduction Section */}
       <section className='about-intro'>
-        <p>
-          MovieVerse is your curated gateway to the vast universe of movies. We've designed a platform that brings you closer to the films you love, and introduces you to new favorites.
-          From the latest blockbusters to timeless classics, our intuitive dashboard offers a seamless experience for every movie enthusiast.
-        </p>
+        <div className='content-wrapper'>
+          <p>
+            CineScope is the ultimate entertainment destination, to bring you the latest and greatest from the world of 
+            movies and television. Our sleek dashboard showcases trending titles and new releases, with each movie, 
+            show, and personality featuring a dedicated page full of detailed information. <br />
+            <br />
+            Whether you're exploring new films, catching up on TV series, or discovering info about your favorite stars, 
+            CineScope makes it easy to find exactly what you're looking for, all in one seamless experience.
+          </p>
+        </div>
       </section>
 
+      {/* Features Section */}
       <section className='about-features'>
-        <div className='feature-card'>
-          <Film size={32} className='feature-icon' />
-          <h4>Trending & New Releases</h4>
-          <p>Get instant access to the most talked-about and recently launched movies.</p>
-        </div>
-
-        <div className='feature-card'>
-          <Star size={32} className='feature-icon' />
-          <h4>Detailed Movie Insights</h4>
-          <p>Explore ratings, genres, and popularity metrics to make informed choices.</p>
-        </div>
-
-        <div className='feature-card'>
-          <Search size={32} className='feature-icon' />
-          <h4>Effortless Search & Navigation</h4>
-          <p>Find your next movie with our clean, responsive, and user-friendly interface.</p>
-        </div>
-
-        <div className='feature-card'>
-          <Info size={32} className='feature-icon' />
-          <h4>Powered by TMDB API</h4>
-          <p>Reliable and up-to-date movie information directly from The Movie Database.</p>
-        </div>
+        {features.map((feature, index) => (
+          <div className='feature-card' key={index}>
+            <div className='feature-icon-wrapper'>
+              {feature.icon}
+            </div>
+            <h4>{feature.title}</h4>
+            <p>{feature.description}</p>
+          </div>
+        ))}
       </section>
 
-      <section className='about-call-to-action'>
-        <p>Ready to start exploring? Dive into the world of movies now!</p>
-        <button className='explore-button' onClick={() => navigate('/')}>Explore Movies</button>
+      {/* Discover Section */}
+      <section className='about-discover-more'>
+        <p>Ready to discover your next favorite movie or TV show?</p>
+        <button 
+          className='explore-button' 
+          onClick={() => navigate('/')}
+        >
+          Explore Dashboard
+        </button>
       </section>
     </div>
   )

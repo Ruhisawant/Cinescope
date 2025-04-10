@@ -2,12 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navigation from './components/Navigation.jsx'
 import MovieDetails from './components/MovieDetails.jsx'
 import ShowDetails from './components/ShowDetails.jsx'
-import ActorDetails from './components/ActorDetails'
+import PeopleDetails from './components/PeopleDetails'
 
 import Dashboard from './pages/Dashboard.jsx'
 import Movies from './pages/Movies.jsx'
 import TVShows from './pages/TvShows.jsx'
-import Actors from './pages/Actors.jsx'
+import People from './pages/People.jsx'
 import About from './pages/About.jsx'
 
 function App() {
@@ -23,8 +23,8 @@ function App() {
           <Route path='/tv-shows' element={<TVShows />} />
           <Route path='/tv-shows/:id' element={<ShowDetails />} />
           
-          <Route path='/actors' element={<Actors />} />
-          <Route path='/actors/:id' element={<ActorDetails />} />
+          <Route path='/people' element={<People />} />
+          <Route path='/people/:id' element={<PeopleDetails />} />
           
           <Route path='/about' element={<About />} />
         </Routes>

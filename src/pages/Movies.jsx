@@ -82,7 +82,7 @@ const Movies = () => {
     document.querySelector('.search-input').value = ''
   }
 
-  // Increment current page to load more movies
+  // Load more movies
   const loadMoreMovies = () => {
     setCurrentPage((prevPage) => prevPage + 1)
   }

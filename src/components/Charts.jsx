@@ -74,7 +74,17 @@ const DashboardChart = ({ movies, genreMap }) => {
 
   const pieChartOptions = {
     plugins: {
-      legend: {position: 'right', labels: {boxWidth: 15, padding: 20, color: '#fff'}},
+      legend: {
+        position: 'right', 
+        labels: {
+          boxWidth: 15, 
+          padding: 20, 
+          color: '#fff',
+          font: {
+            size: 12
+          }
+        }
+      },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -85,7 +95,15 @@ const DashboardChart = ({ movies, genreMap }) => {
           }
         }
       },
-      title: {display: true, text: 'Movie Distribution by Genre', font: {size: 25}, color: '#fff'},
+      title: {
+        display: true, 
+        text: 'Movie Distribution by Genre', 
+        font: {size: 20, weight: 'bold'}, 
+        color: '#fff',
+        padding: {
+          bottom: 20
+        }
+      },
     },
     maintainAspectRatio: false
   }
@@ -101,7 +119,7 @@ const DashboardChart = ({ movies, genreMap }) => {
         const year = new Date(movie.release_date).getFullYear()
         yearsData[year] = (yearsData[year] || 0) + 1
         if (!ratingsByYear[year]) ratingsByYear[year] = 0
-        ratingsByYear[year] += movie.vote_average
+        ratingsByYear[year] += movie.vote_average || 0
         countByYear[year] = (countByYear[year] || 0) + 1
       }
     })
@@ -111,12 +129,28 @@ const DashboardChart = ({ movies, genreMap }) => {
       avgRatingsByYear[year] = ratingsByYear[year] / countByYear[year]
     })
 
-    const sortedYears = Object.keys(yearsData).sort()
-    const moviesCountData = sortedYears.map(year => yearsData[year])
-    const avgRatingsData = sortedYears.map(year => avgRatingsByYear[year].toFixed(1))
+    // Get all years from the earliest to the latest
+    const allYears = Object.keys(yearsData).sort((a, b) => parseInt(a) - parseInt(b))
+    const earliestYear = Math.min(...allYears.map(Number))
+    const latestYear = Math.max(...allYears.map(Number))
+    
+    // Create a complete array of years, including those with no movies
+    const completeYears = []
+    for (let year = earliestYear; year <= latestYear; year++) {
+      completeYears.push(year.toString())
+    }
+
+    // Prepare data sets with 0 for years without movies
+    const moviesCountData = completeYears.map(year => yearsData[year] || 0)
+    const avgRatingsData = completeYears.map(year => {
+      if (avgRatingsByYear[year]) {
+        return avgRatingsByYear[year].toFixed(1)
+      }
+      return null
+    })
 
     setLineChartData({
-      labels: sortedYears,
+      labels: completeYears,
       datasets: [
         {
           label: 'Number of Movies',
@@ -146,6 +180,7 @@ const DashboardChart = ({ movies, genreMap }) => {
           pointBorderWidth: 2,
           pointRadius: 4,
           pointHoverRadius: 6,
+          spanGaps: true,
         }
       ],
     })
@@ -158,7 +193,15 @@ const DashboardChart = ({ movies, genreMap }) => {
       intersect: false,
     },
     plugins: {
-      title: {display: true, text: 'Movie Trends Over Time', font: {size: 25}, color: '#fff'},
+      title: {
+        display: true, 
+        text: 'Movie Trends Over Time', 
+        font: {size: 20, weight: 'bold'}, 
+        color: '#fff',
+        padding: {
+          bottom: 20
+        }
+      },
       tooltip: {
         callbacks: {
           title: function(context) {return `Year: ${context[0].label}`}
@@ -166,6 +209,12 @@ const DashboardChart = ({ movies, genreMap }) => {
       },
       legend: {
         position: 'top',
+        labels: {
+          color: '#fff',
+          font: {
+            size: 12
+          }
+        }
       }
     },
     scales: {
@@ -173,22 +222,64 @@ const DashboardChart = ({ movies, genreMap }) => {
         type: 'linear',
         display: true,
         position: 'left',
-        title: {display: true, text: 'Number of Movies', color: '#fff'},
+        title: {
+          display: true, 
+          text: 'Number of Movies', 
+          color: '#fff',
+          font: {
+            size: 12
+          }
+        },
         beginAtZero: true,
-        grid: {drawOnChartArea: false},
-        ticks: {precision: 0}
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+          drawOnChartArea: true
+        },
+        ticks: {
+          precision: 0,
+          color: '#fff'
+        }
       },
       y1: {
         type: 'linear',
         display: true,
         position: 'right',
-        title: {display: true, text: 'Average Rating', color: '#fff'},
+        title: {
+          display: true, 
+          text: 'Average Rating', 
+          color: '#fff',
+          font: {
+            size: 12
+          }
+        },
         min: 0,
         max: 10,
-        grid: {drawOnChartArea: false}
+        grid: {
+          drawOnChartArea: false
+        },
+        ticks: {
+          color: '#fff'
+        }
       },
       x: {
-        title: {display: true, text: 'Release Year', color: '#fff'}
+        title: {
+          display: true, 
+          text: 'Release Year', 
+          color: '#fff',
+          font: {
+            size: 12
+          }
+        },
+        ticks: {
+          color: '#fff',
+          maxRotation: 45,
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 20
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
       }
     },
     maintainAspectRatio: false

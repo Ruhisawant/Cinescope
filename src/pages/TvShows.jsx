@@ -82,7 +82,7 @@ const TVShows = () => {
     document.querySelector('.search-input').value = ''
   }
 
-  // Increment current page to load more shows
+  // Load more shows
   const loadMoreShows = () => {
     setCurrentPage((prevPage) => prevPage + 1)
   }
