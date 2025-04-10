@@ -11,7 +11,7 @@ const TVShows = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [genres, setGenres] = useState([])
   const [languages, setLanguages] = useState([])
-  
+
   const [selectedGenre, setSelectedGenre] = useState('')
   const [selectedRating, setSelectedRating] = useState('')
   const [selectedYear, setSelectedYear] = useState('')
@@ -23,63 +23,56 @@ const TVShows = () => {
   useEffect(() => {
     const fetchTVShows = async () => {
       try {
-        const response = await fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&page=${currentPage}`)
+        const response = await fetch(`https://api.themoviedb.org/3/trending/tv/week?page=${currentPage}&api_key=${API_KEY}`)
         if (!response.ok) throw new Error('Failed to fetch TV shows')
-
+        
         const data = await response.json()
-        setTvShows((prevShows) => {
+        setTvShows(prevShows => {
           const existingIds = new Set(prevShows.map(m => m.id))
           const newUniqueShows = data.results.filter(show => !existingIds.has(show.id))
           return [...prevShows, ...newUniqueShows]
         })
       } catch (error) {
-        console.error('Error fetching TV shows:', error.message)
+        console.error('Error fetching TV shows:', error)
       }
     }
 
-    const fetchGenres = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`https://api.themoviedb.org/3/genre/tv/list?api_key=${API_KEY}&language=en-US`)
-        if (!response.ok) throw new Error('Failed to fetch genres')
+        const [genresData, languagesData] = await Promise.all([
+          fetch(`https://api.themoviedb.org/3/genre/tv/list?language=en-US&api_key=${API_KEY}`),
+          fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${API_KEY}`)
+        ])
+        if (!genresData.ok || !languagesData.ok) throw new Error('Failed to fetch data')
 
-        const data = await response.json()
-        setGenres(data.genres)
+        const genresDataJson = await genresData.json()
+        const languagesDataJson = await languagesData.json()
+
+        setGenres(genresDataJson.genres)
+        setLanguages(languagesDataJson)
       } catch (error) {
-        console.error('Error fetching genres:', error.message)
+        console.error('Error fetching initial data:', error)
       }
     }
 
-    const fetchLanguages = async () => {
-      try {
-        const response = await fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${API_KEY}`)
-        if (!response.ok) throw new Error('Failed to fetch languages')
-  
-        const data = await response.json()
-        setLanguages(data)
-      } catch (error) {
-        console.error('Error fetching languages:', error.message)
-      }
-    }
-
-    fetchTVShows(currentPage)
-    fetchGenres()
-    fetchLanguages()
+    fetchTVShows()
+    fetchInitialData()
   }, [currentPage])
 
   // Filter shows based on user inputs
-  const filterShows = (tvShows) => {
-    return tvShows.filter(show => {
-      const matchesSearch = searchQuery ? (show.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) : true
-      const matchesGenre = selectedGenre ? show.genre_ids.includes(Number(selectedGenre)) : true
+  const filterShows = (shows) => {
+    return shows.filter(show => {      
+      const matchesSearch = show.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesGenre = selectedGenre ? show.genre_ids?.includes(Number(selectedGenre)) : true
       const matchesRating = selectedRating ? show.vote_average >= Number(selectedRating) : true
-      const matchesYear = selectedYear ? show.first_air_date.startsWith(selectedYear) : true
+      const matchesYear = selectedYear ? show.first_air_date?.startsWith(selectedYear) : true
       const matchesLanguage = selectedLanguage ? show.original_language === selectedLanguage : true
-  
+
       return matchesSearch && matchesGenre && matchesRating && matchesYear && matchesLanguage
     })
   }
 
-  // Reset all filters
+  // Clear all filters
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedGenre('')
@@ -89,13 +82,20 @@ const TVShows = () => {
     document.querySelector('.search-input').value = ''
   }
 
-  // Load more shows by incrementing page number
+  // Increment current page to load more shows
   const loadMoreShows = () => {
     setCurrentPage((prevPage) => prevPage + 1)
   }
 
+  // Format show air date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
   return (
-    <div>
+    <>
       {/* Header */}
       <header className='header'>
         <div className='search-container'>
@@ -111,16 +111,13 @@ const TVShows = () => {
         <h1>All TV Shows</h1>
       </header>
 
-      {/* Main Show Content */}
+      {/* Main content */}
       <main className='content'>
+        {/* Filters section */}
         <div className='filters-row'>
           {/* Genre Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedGenre} 
-              onChange={(e) => setSelectedGenre(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)}>
               <option value=''>All Genres</option>
               {genres.map(genre => (
                 <option key={genre.id} value={genre.id}>{genre.name}</option>
@@ -131,11 +128,7 @@ const TVShows = () => {
 
           {/* Rating Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedRating} 
-              onChange={(e) => setSelectedRating(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
               <option value=''>All Ratings</option>
               <option value='9'>9+</option>
               <option value='8'>8+</option>
@@ -146,13 +139,9 @@ const TVShows = () => {
             <ChevronDown className='filter-icon' size={16} />
           </div>
 
-          {/* Release Year Filter */}
+          {/* Year Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
               <option value=''>All Years</option>
               {Array.from({ length: 20 }, (_, i) => {
                 const year = new Date().getFullYear() - i
@@ -162,24 +151,20 @@ const TVShows = () => {
             <ChevronDown className='filter-icon' size={16} />
           </div>
 
-          {/* Languages Filter */}
+          {/* Language Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedLanguage} 
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)}>
               <option value=''>All Languages</option>
-                {languages.map(lang => (
-                  <option key={lang.iso_639_1} value={lang.iso_639_1}>
-                    {lang.english_name}
-                  </option>
-                ))}
+              {languages.map(lang => (
+                <option key={lang.iso_639_1} value={lang.iso_639_1}>
+                  {lang.english_name}
+                </option>
+              ))}
             </select>
             <ChevronDown className='filter-icon' size={16} />
           </div>
 
-          {/* Clear Filters Button */}
+          {/* Clear Filters button */}
           {(selectedGenre || selectedRating || selectedYear || selectedLanguage || searchQuery) && (
             <button onClick={clearFilters} className='clear-filters-btn'>
               Clear Filters
@@ -187,34 +172,39 @@ const TVShows = () => {
           )}
         </div>
         
-        {/* TV shows List */}
+        {/* TV Show Cards Section */}
         <section className='content-list'>
           <div className='content-grid'>
             {filterShows(tvShows).map((show) => (
               <div key={show.id} className='content-card' onClick={() => navigate(`/tv-shows/${show.id}`)}>
                 <img 
                   src={`https://image.tmdb.org/t/p/w500${show.poster_path}`} 
-                  alt={show.name} 
+                  alt={`${show.name} poster`} 
                   className='content-img'
                 />
                 <div className='content-details'>
                   <p className='content-title'>{show.name}</p>
                   <div className='content-rating'>
                     <Star size={14} className='star-icon' />
-                    <span>{show.vote_average.toFixed(1)}</span>
+                    <span>{show.vote_average?.toFixed(1) || 'N/A'}</span>
                   </div>
                   <p className='content-release'>
-                    <Calendar size={16} /> {show.first_air_date}
+                    <Calendar size={14} /> {formatDate(show.first_air_date)}
                   </p>
                 </div>
               </div>
             ))}
-
-            {/* Message for no matches */}
-            {filterShows(tvShows).length === 0 && (
-              <p className='no-results'>No shows match your filters.</p>
-            )}
           </div>
+
+          {/* No Results Message */}
+          {filterShows(tvShows).length === 0 && (
+            <div className='no-results'>
+              <p>No shows match your filters.</p>
+              <button onClick={clearFilters} className='clear-filters-btn'>
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Load More Button */}
@@ -226,7 +216,7 @@ const TVShows = () => {
           </div>
         )}
       </main>
-    </div>
+    </>
   )
 }
 

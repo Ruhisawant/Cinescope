@@ -3,6 +3,13 @@ html, body {
   height: 100%;
   margin: 0;
   background-color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.tv-shows-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
@@ -34,6 +41,7 @@ h1 {
   width: 250px;
   gap: 0.5rem;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .search-container:focus-within {
@@ -53,10 +61,29 @@ h1 {
   color: white;
   font-size: 16px;
   flex: 1;
+  width: 100%;
 }
 
 .search-input::placeholder {
   color: #9ca3af;
+}
+
+.clear-search-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 /* Filters */
@@ -81,6 +108,11 @@ h1 {
   appearance: none;
   cursor: pointer;
   font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.filter-btn:hover {
+  background-color: #4b5563;
 }
 
 .filter-icon {
@@ -89,6 +121,7 @@ h1 {
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
+  pointer-events: none;
 }
 
 .clear-filters-btn {
@@ -110,6 +143,7 @@ h1 {
 .content {
   padding: 1rem;
   background-color: #111827;
+  flex: 1;
 }
 
 .content-grid {
@@ -125,12 +159,14 @@ h1 {
   border: 1px solid #374151;
   position: relative;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  height: 360px;
-  transition: transform 0.2s;
+  height: 380px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .content-card:hover {
-  transform: scale(1.03);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 .content-img {
@@ -139,21 +175,35 @@ h1 {
   object-fit: cover;
 }
 
+.content-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #2a3347;
+  color: #9ca3af;
+}
+
+.content-img-placeholder p {
+  margin-top: 0.5rem;
+}
+
 .content-details {
   position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
   color: #f3f4f6;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 1rem;
-  border-radius: 0.25rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+  padding: 1.5rem 1rem 1rem;
 }
 
 .content-title {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1.1rem;
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -164,6 +214,7 @@ h1 {
   align-items: center;
   font-size: 0.875rem;
   color: #fbbf24;
+  margin-bottom: 0.25rem;
 }
 
 .star-icon {
@@ -171,15 +222,30 @@ h1 {
 }
 
 .content-release {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.5rem 0 0;
 }
 
 .no-results {
   color: #e5e7eb;
   font-size: 1rem;
-  margin: 1rem auto;
+  margin: 3rem auto;
   text-align: center;
+  max-width: 400px;
+  padding: 2rem;
+  background-color: #1f2937;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-results p {
+  margin-bottom: 1rem;
 }
 
 /* Load More Button */
@@ -189,34 +255,39 @@ h1 {
 }
 
 .load-more-btn {
-  background-color: #ef4444;
+  background-color: #3b82f6;
   color: white;
   border: none;
   border-radius: 0.25rem;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-weight: 500;
 }
 
 .load-more-btn:hover {
-  background-color: #dc2626;
+  background-color: #2563eb;
 }
 
 /* Responsive design */
 @media (max-width: 480px) {
   .search-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-
-  .search-icon {
-    display: none;
+    width: 100%;
   }
 
   .content-grid {
     grid-template-columns: 1fr;
+  }
+
+  .filters-row {
+    gap: 0.5rem;
+  }
+  
+  .filter-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 1.5rem 0.4rem 0.5rem;
+    min-width: 100px;
   }
 }
 
@@ -229,19 +300,14 @@ h1 {
 
   .search-container {
     width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .search-input {
-    min-width: 0;
   }
 
   .content-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-
-  .content-list {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  
+  .content-card {
+    height: 340px;
   }
 }
 

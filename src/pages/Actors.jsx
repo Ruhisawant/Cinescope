@@ -15,14 +15,6 @@ const Actors = () => {
 
   const navigate = useNavigate()
 
-  // Function to calculate age from birthdate
-  const calculateAge = (birthdate) => {
-    if (!birthdate) return null
-    const birthYear = new Date(birthdate).getFullYear()
-    const currentYear = new Date().getFullYear()
-    return currentYear - birthYear
-  }
-
   // Fetch actors
   useEffect(() => {
     const fetchActors = async () => {
@@ -31,10 +23,8 @@ const Actors = () => {
         if (!response.ok) throw new Error('Failed to fetch actors')
         
         const data = await response.json()
-        const newActors = data.results
-        
         const actorsWithDetails = await Promise.all(
-          newActors.map(async (actor) => {
+          data.results.map(async (actor) => {
             try {
               const detailResponse = await fetch(`https://api.themoviedb.org/3/person/${actor.id}?api_key=${API_KEY}&language=en-US`)
               if (!detailResponse.ok) return actor
@@ -43,7 +33,6 @@ const Actors = () => {
               return { ...actor, birthday: detailData.birthday }
             } catch (error) {
               console.error(`Error fetching details for actor ${actor.id}:`, error.message)
-              return actor
             }
           })
         )
@@ -60,6 +49,14 @@ const Actors = () => {
 
     fetchActors()
   }, [currentPage])
+
+  // Function to calculate age from birthdate
+  const calculateAge = (birthdate) => {
+    if (!birthdate) return null
+    const birthYear = new Date(birthdate).getFullYear()
+    const currentYear = new Date().getFullYear()
+    return currentYear - birthYear
+  }
 
   // Filter actors based on user inputs
   const filterActors = (actors) => {
@@ -85,7 +82,7 @@ const Actors = () => {
     })
   }
 
-  // Reset all filters
+  // Clear all filters
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedGender('')
@@ -93,13 +90,13 @@ const Actors = () => {
     document.querySelector('.search-input').value = ''
   }
 
-  // Load more actors by incrementing page number
+  // Increment current page to load more actors
   const loadMoreActors = () => {
     setCurrentPage((prevPage) => prevPage + 1)
   }
 
   return (
-    <div>
+    <>
       {/* Header */}
       <header className='header'>
         <div className='search-container'>
@@ -117,14 +114,11 @@ const Actors = () => {
 
       {/* Main Actor Content */}
       <main className='content'>
+        {/* Filters section */}
         <div className='filters-row'>
           {/* Gender Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedGender} 
-              onChange={(e) => setSelectedGender(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)}>
               <option value=''>All Genders</option>
               <option value='1'>Female</option>
               <option value='2'>Male</option>
@@ -134,11 +128,7 @@ const Actors = () => {
 
           {/* Age Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedAge} 
-              onChange={(e) => setSelectedAge(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedAge} onChange={(e) => setSelectedAge(e.target.value)}>
               <option value=''>All Ages</option>
               <option value='0-20'>0-20</option>
               <option value='21-30'>21-30</option>
@@ -158,7 +148,7 @@ const Actors = () => {
           )}
         </div>
 
-        {/* Actors List */}
+        {/* Actor Cards Section */}
         <section className='content-list'>
           <div className='content-grid'>
             {filterActors(actors).map((actor) => (
@@ -170,16 +160,23 @@ const Actors = () => {
                 />
                 <div className='content-details'>
                   <p className='content-title'>{actor.name}</p>
-                  {actor.birthday && <p className='content-subtitle'>Age: {calculateAge(actor.birthday)}</p>}
+                  <p className='content-subtitle'>
+                    Age: {actor.birthday ? calculateAge(actor.birthday) || 'N/A' : 'N/A'}
+                  </p>
                 </div>
               </div>
             ))}
-
-            {/* Message for no matches */}
-            {filterActors(actors).length === 0 && (
-              <p className='no-results'>No actors match your filters.</p>
-            )}
           </div>
+
+          {/* No Results Message */}
+          {filterActors(actors).length === 0 && (
+            <div className='no-results'>
+              <p>No shows match your filters.</p>
+              <button onClick={clearFilters} className='clear-filters-btn'>
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Load More Button */}
@@ -191,7 +188,7 @@ const Actors = () => {
           </div>
         )}
       </main>
-    </div>
+    </>
   )
 }
 

@@ -19,7 +19,7 @@ const Movies = () => {
 
   const navigate = useNavigate()
 
-  // Fetch TV shows, genres, and languages
+  // Fetch movies, genres, and languages
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -27,46 +27,39 @@ const Movies = () => {
         if (!response.ok) throw new Error('Failed to fetch movies')
 
         const data = await response.json()
-        setMovies((prevMovies) => {
+        setMovies(prevMovies => {
           const existingIds = new Set(prevMovies.map(m => m.id))
           const newUniqueMovies = data.results.filter(movie => !existingIds.has(movie.id))
           return [...prevMovies, ...newUniqueMovies]
         })
       } catch (error) {
-        setError('Error fetching movies: ', error.message)
+        console.error('Error fetching movies:', error)
       }
     }
 
-    const fetchGenres = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}&language=en-US`)
-        if (!response.ok) throw new Error('Failed to fetch genres')
+        const [genresData, languagesData] = await Promise.all([
+          fetch(`https://api.themoviedb.org/3/genre/movie/list?language=en-US&api_key=${API_KEY}`),
+          fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${API_KEY}`)
+        ])
+        if (!genresData.ok || !languagesData.ok) throw new Error('Failed to fetch data')
 
-        const data = await response.json()
-        setGenres(data.genres)
+        const genresDataJson = await genresData.json()
+        const languagesDataJson = await languagesData.json()
+
+        setGenres(genresDataJson.genres)
+        setLanguages(languagesDataJson)
       } catch (error) {
-        console.error('Error fetching genres:', error.message)
+        console.error('Error fetching initial data:', error)
       }
     }
 
-    const fetchLanguages = async () => {
-      try {
-        const response = await fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${API_KEY}`)
-        if (!response.ok) throw new Error('Failed to fetch languages')
-  
-        const data = await response.json()
-        setLanguages(data)
-      } catch (error) {
-        console.error('Error fetching languages:', error.message)
-      }
-    }
-
-    fetchMovies(currentPage)
-    fetchGenres()
-    fetchLanguages()
+    fetchMovies()
+    fetchInitialData()
   }, [currentPage])
 
-  // Filter shows based on user inputs
+  // Filter movies based on user inputs
   const filterMovies = (movies) => {
     return movies.filter(movie => {
       const matchesSearch = movie.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -79,7 +72,7 @@ const Movies = () => {
     })
   }
 
-  // Reset all filters
+  // Clear all filters
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedGenre('')
@@ -89,13 +82,20 @@ const Movies = () => {
     document.querySelector('.search-input').value = ''
   }
 
-  // Load more shows by incrementing page number
+  // Increment current page to load more movies
   const loadMoreMovies = () => {
     setCurrentPage((prevPage) => prevPage + 1)
   }
 
+  // Format movie release date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
   return (
-    <div>
+    <>
       {/* Header */}
       <header className='header'>
         <div className='search-container'>
@@ -113,14 +113,11 @@ const Movies = () => {
 
       {/* Main Movie Content */}
       <main className='content'>
+        {/* Filters section */}
         <div className='filters-row'>
           {/* Genre Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedGenre} 
-              onChange={(e) => setSelectedGenre(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)}>
               <option value=''>All Genres</option>
               {genres.map(genre => (
                 <option key={genre.id} value={genre.id}>{genre.name}</option>
@@ -131,11 +128,7 @@ const Movies = () => {
 
           {/* Rating Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedRating} 
-              onChange={(e) => setSelectedRating(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
               <option value=''>All Ratings</option>
               <option value='9'>9+</option>
               <option value='8'>8+</option>
@@ -148,11 +141,7 @@ const Movies = () => {
 
           {/* Release Year Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
               <option value=''>All Years</option>
               {Array.from({ length: 20 }, (_, i) => {
                 const year = new Date().getFullYear() - i
@@ -162,13 +151,9 @@ const Movies = () => {
             <ChevronDown className='filter-icon' size={16} />
           </div>
 
-          {/* Languages Filter */}
+          {/* Language Filter */}
           <div className='select-wrapper'>
-            <select 
-              className='filter-btn' 
-              value={selectedLanguage} 
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-            >
+            <select className='filter-btn' value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)}>
               <option value=''>All Languages</option>
                 {languages.map(lang => (
                   <option key={lang.iso_639_1} value={lang.iso_639_1}>
@@ -187,34 +172,39 @@ const Movies = () => {
           )}
         </div>
 
-        {/* Movie List */}
+        {/* Movie Cards Section */}
         <section className='content-list'>
           <div className='content-grid'>
             {filterMovies(movies).map((movie) => (
               <div key={movie.id} className='content-card' onClick={() => navigate(`/movies/${movie.id}`)}>
                 <img 
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
-                  alt={movie.title} 
+                  alt={`${movie.title} poster`} 
                   className='content-img'
                 />
                 <div className='content-details'>
                   <p className='content-title'>{movie.title}</p>
                   <div className='content-rating'>
                     <Star size={14} className='star-icon' />
-                    <span>{movie.vote_average.toFixed(1)}</span>
+                    <span>{movie.vote_average.toFixed(1) || 'N/A'}</span>
                   </div>
                   <p className='content-release'>
-                    <Calendar size={16} /> {movie.release_date}
+                    <Calendar size={14} /> {formatDate(movie.release_date)}
                   </p>
                 </div>
               </div>
             ))}
-
-            {/* Message for no matches */}
-            {filterMovies(movies).length === 0 && (
-              <p className='no-results'>No movies match your filters.</p>
-            )}
           </div>
+
+          {/* No Results Message */}
+          {filterMovies(movies).length === 0 && (
+            <div className='no-results'>
+              <p>No shows match your filters.</p>
+              <button onClick={clearFilters} className='clear-filters-btn'>
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Load More Button */}
@@ -226,7 +216,7 @@ const Movies = () => {
           </div>
         )}
       </main>
-    </div>
+    </>
   )
 }
 
