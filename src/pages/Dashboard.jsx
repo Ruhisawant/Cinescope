@@ -242,11 +242,11 @@ const Dashboard = () => {
         <section className='popular-movies'>
           <div className='section-header'>
             <h3 className='section-title'>Popular TV Shows</h3>
-            <button className='view-all-btn' onClick={() => navigate('/tv')}>View All</button>
+            <button className='view-all-btn' onClick={() => navigate('/tv-shows')}>View All</button>
           </div>
           <div className='popular-list'>
             {filteredTvShows.slice(0, 8).map((show) => (
-              <div key={show.id} className='popular-card' onClick={() => navigate(`/tv/${show.id}`)}>
+              <div key={show.id} className='popular-card' onClick={() => navigate(`/tv-shows/${show.id}`)}>
                 <div className='card-content'>
                   <img 
                     src={`https://image.tmdb.org/t/p/w92${show.poster_path}`} 
@@ -278,7 +278,7 @@ const Dashboard = () => {
           </div>
           <div className='popular-list'>
             {filteredPeople.slice(0, 8).map((person) => (
-              <div key={person.id} className='popular-card' onClick={() => navigate(`/person/${person.id}`)}>
+              <div key={person.id} className='popular-card' onClick={() => navigate(`/people/${person.id}`)}>
                 <div className='card-content'>
                   <img 
                     src={`https://image.tmdb.org/t/p/w92${person.profile_path}`} 

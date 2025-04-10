@@ -217,6 +217,7 @@ html, body {
   align-items: center;
   font-size: 0.875rem;
   color: #fbbf24;
+  margin-bottom: 5px;
 }
 
 .calendar-icon,
